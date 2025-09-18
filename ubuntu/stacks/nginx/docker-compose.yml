@@ -8,16 +8,17 @@ services:
     volumes:
       - ${REMOTE_DATA_DIR:-/opt/swarm-data}/nginx/conf.d:/etc/nginx/conf.d:ro
       - ${REMOTE_DATA_DIR:-/opt/swarm-data}/nginx/certs:/etc/nginx/certs:ro
+    # volumes:
+    #   - ${REMOTE_DATA_DIR:-/opt/swarm-data}/nginx/conf.d:/etc/nginx/conf.d:ro
+    #   - ${REMOTE_DATA_DIR:-/opt/swarm-data}/nginx/certs:/etc/nginx/certs:ro
     deploy:
       replicas: 1
       placement:
         constraints:
           - node.role == manager
-    networks:
-      - public
-networks:
-  public:
-    external: true
-    name: ${OVERLAY_NETWORK_NAME:-public}
+# networks:
+#   public:
+#     external: true
+#     name: ${OVERLAY_NETWORK_NAME:-public}
 
 
