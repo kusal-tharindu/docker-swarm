@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  prom:
+    image: prom/prometheus:latest
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus"]
+    volumes:
+      - ${REMOTE_DATA_DIR:-/opt/swarm-data}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${REMOTE_DATA_DIR:-/opt/swarm-data}/prometheus/data:/prometheus
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - public
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ${REMOTE_DATA_DIR:-/opt/swarm-data}/grafana:/var/lib/grafana
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - public
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    command: ["--docker_only"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    deploy:
+      mode: global
+    networks:
+      - public
+  node-exporter:
+    image: prom/node-exporter:latest
+    command: ["--path.rootfs=/host"]
+    volumes:
+      - /:/host:ro,rslave
+    deploy:
+      mode: global
+    networks:
+      - public
+networks:
+  public:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME:-public}
+
+
